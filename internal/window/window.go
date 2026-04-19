@@ -23,10 +23,7 @@ type SlidingWindow struct {
 }
 
 func NewSlidingWindow(windowSize time.Duration, bucketSize time.Duration) *SlidingWindow {
-    numBuckets := int(windowSize / bucketSize)
-    if numBuckets < 1 {
-        numBuckets = 1
-    }
+    numBuckets := max(int(windowSize / bucketSize), 1)
     
     return &SlidingWindow{
         windowSize: windowSize,

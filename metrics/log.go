@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// SlogObserver logs events using log/slog (Go 1.21+)
+// SlogObserver logs events using log/slog
 type SlogObserver struct {
 	logger *slog.Logger
 }

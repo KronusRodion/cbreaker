@@ -6,6 +6,7 @@ import (
 	"log"
 	"math/rand"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/KronusRodion/cbreaker"
@@ -34,23 +35,31 @@ func main() {
 
 	var wg sync.WaitGroup
 
+	errStat := atomic.Int32{}
+	rejectStat := atomic.Int32{}
+	successStat := atomic.Int32{}
+
 	// use func Call from packet github.com/KronusRodion/cbreaker
 	for range 100 {
 		wg.Go(func() {
-			user, err := cbreaker.Call(ctx, "postgres", getUser)
+			_, err := cbreaker.Call(ctx, "postgres", getUser)
 			if err != nil {
 				switch {
 				case errors.Is(err, domain.ErrCircuitOpen):
-					log.Println("The service is unavailable")
+					rejectStat.Add(1)
 				default:
-					log.Println("undefined error: ", err)
+					errStat.Add(1)
 				}
 			} else {
-				log.Println(user)
+				successStat.Add(1)
 			}
 		})
 	}
 
 	wg.Wait()
+
+	log.Println("Errors: ", errStat.Load())
+	log.Println("Rejected: ", rejectStat.Load())
+	log.Println("Success: ", successStat.Load())
 
 }

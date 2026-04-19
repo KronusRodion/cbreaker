@@ -1,30 +1,27 @@
-package observer
+package cbreaker
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/KronusRodion/cbreaker/domain"
+	"github.com/KronusRodion/cbreaker/metrics"
+	"github.com/KronusRodion/cbreaker/ports"
 )
 
-// Observer defines the interface for circuit breaker observability
-
-// NoopObserver does nothing (default)
-type NoopObserver struct{}
-
-func (n *NoopObserver) OnStateChange(ctx context.Context, name string, fromState, toState domain.State) {
+// DefaultObserver - возвращает наблюдателя с slog
+func DefaultObserver() ports.Observer {
+	logObserver := metrics.NewSlogObserver(slog.Default())
+	return NewMultiObserver(logObserver)
 }
-func (n *NoopObserver) OnCall(ctx context.Context, name string, duration time.Duration, err error) {}
-func (n *NoopObserver) OnSuccess(ctx context.Context, name string, duration time.Duration)         {}
-func (n *NoopObserver) OnFailure(ctx context.Context, name string, err error)                      {}
-func (n *NoopObserver) OnRejected(ctx context.Context, name string)                                {}
 
 // MultiObserver combines multiple observers
 type MultiObserver struct {
-	observers []NoopObserver
+	observers []ports.Observer
 }
 
-func NewMultiObserver(observers ...NoopObserver) *MultiObserver {
+func NewMultiObserver(observers ...ports.Observer) *MultiObserver {
 	return &MultiObserver{observers: observers}
 }
 

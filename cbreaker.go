@@ -16,9 +16,9 @@ var (
 
 // Config глобальной конфигурации
 type Config struct {
-	Name                  string
-	FailureThreshold      int
-	SuccessThreshold      int
+	Name                  string // Config name
+	FailureThreshold      int	// Fail num in window before try to open state
+	SuccessThreshold      int	// Success num in window before try to close state
 	Timeout               time.Duration
 	MaxConcurrentRequests int
 	RollingWindow         time.Duration
@@ -48,8 +48,8 @@ func Call[T any](ctx context.Context, resourceName string, fn func(context.Conte
 	result, err = fn(ctx)
 	duration := time.Since(start)
 	start1 := time.Now()
-	// Record outcome
-	breaker.RecordOutcome(state, err, duration, start1)
+	// Record outcome in another goroutine to low latency main request
+	go breaker.RecordOutcome(state, err, duration, start1)
 
 	// Notify observer
 	if err != nil {

@@ -3,7 +3,6 @@ module github.com/KronusRodion/cbreaker
 go 1.26.2
 
 require (
-	github.com/google/uuid v1.6.0
 	github.com/prometheus/client_golang v1.23.2
 	go.opentelemetry.io/otel v1.43.0
 	go.opentelemetry.io/otel/metric v1.43.0
