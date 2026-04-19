@@ -74,7 +74,7 @@ func NewZapObserver(logger *zap.Logger) *ZapObserver {
 	return &ZapObserver{logger: logger}
 }
 
-func (o *ZapObserver) OnStateChange(ctx context.Context, name string, fromState, toState domain.State) {
+func (o *ZapObserver) OnStateChange(_ context.Context, name string, fromState, toState domain.State) {
 	o.logger.Info("circuit breaker state changed",
 		zap.String("circuit", name),
 		zap.String("from", fromState.String()),
@@ -82,7 +82,7 @@ func (o *ZapObserver) OnStateChange(ctx context.Context, name string, fromState,
 	)
 }
 
-func (o *ZapObserver) OnCall(ctx context.Context, name string, duration time.Duration, err error) {
+func (o *ZapObserver) OnCall(_ context.Context, name string, duration time.Duration, err error) {
 	if err != nil {
 		o.logger.Error("circuit breaker call failed",
 			zap.String("circuit", name),
@@ -97,15 +97,15 @@ func (o *ZapObserver) OnCall(ctx context.Context, name string, duration time.Dur
 	}
 }
 
-func (o *ZapObserver) OnSuccess(ctx context.Context, name string, duration time.Duration) {
+func (o *ZapObserver) OnSuccess(_ context.Context, _ string, _ time.Duration) {
 	// Already handled in OnCall, but can be used separately
 }
 
-func (o *ZapObserver) OnFailure(ctx context.Context, name string, err error) {
+func (o *ZapObserver) OnFailure(_ context.Context, _ string, _ error) {
 	// Already handled in OnCall
 }
 
-func (o *ZapObserver) OnRejected(ctx context.Context, name string) {
+func (o *ZapObserver) OnRejected(_ context.Context, name string) {
 	o.logger.Warn("circuit breaker rejected call (circuit open)",
 		zap.String("circuit", name),
 	)

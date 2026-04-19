@@ -13,7 +13,7 @@ type Breaker interface {
 
 	NotifyRejected(ctx context.Context)
 	NotifyFailure(ctx context.Context, err error)
-	RecordOutcome( state domain.State, err error, duration time.Duration, start time.Time)
+	RecordOutcome( state domain.State, err error, duration time.Duration)
 	NotifySuccess(ctx context.Context, duration time.Duration)
 
 	State() domain.State

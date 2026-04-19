@@ -13,7 +13,7 @@ import (
 )
 
 // internal implementation
-type breakerImpl struct {
+type BreakerImpl struct {
 	name string
 	mu   sync.RWMutex
 
@@ -81,7 +81,7 @@ func WithObserver(obs ports.Observer) BreakerOption {
 	return func(c *breakerConfig) { c.observer = obs }
 }
 
-func NewBreaker(opts ...BreakerOption) *breakerImpl {
+func NewBreaker(opts ...BreakerOption) *BreakerImpl {
 	cfg := &breakerConfig{
 		name:                  "default",
 		failureThreshold:      5,
@@ -95,7 +95,7 @@ func NewBreaker(opts ...BreakerOption) *breakerImpl {
 		opt(cfg)
 	}
 
-	return &breakerImpl{
+	return &BreakerImpl{
 		name:                  cfg.name,
 		failureThreshold:      cfg.failureThreshold,
 		successThreshold:      cfg.successThreshold,
@@ -109,7 +109,7 @@ func NewBreaker(opts ...BreakerOption) *breakerImpl {
 	}
 }
 
-func (b *breakerImpl) TryAcquire(ctx context.Context) (domain.State, error) {
+func (b *BreakerImpl) TryAcquire(ctx context.Context) (domain.State, error) {
 	b.mu.RLock()
 	currentState := b.state
 	b.mu.RUnlock()
@@ -142,7 +142,7 @@ func (b *breakerImpl) TryAcquire(ctx context.Context) (domain.State, error) {
 	return currentState, nil
 }
 
-func (b *breakerImpl) RecordOutcome(state domain.State, err error, duration time.Duration, start time.Time) {
+func (b *BreakerImpl) RecordOutcome(state domain.State, err error, duration time.Duration) {
 	// Освобождаем семафор если нужно
 	if state == domain.StateHalfOpen {
 		<-b.halfOpenSem
@@ -177,12 +177,12 @@ func (b *breakerImpl) RecordOutcome(state domain.State, err error, duration time
 	}
 }
 
-func (b *breakerImpl) shouldTrip() bool {
+func (b *BreakerImpl) shouldTrip() bool {
 	failureRate := b.window.FailureRate()
 	return failureRate >= 0.5 && b.window.TotalFailures() >= b.failureThreshold
 }
 
-func (b *breakerImpl) setState(newState domain.State) {
+func (b *BreakerImpl) setState(newState domain.State) {
 
 	oldState := b.state
 	b.state = newState
@@ -200,13 +200,13 @@ func (b *breakerImpl) setState(newState domain.State) {
 	}
 }
 
-func (b *breakerImpl) State() domain.State {
+func (b *BreakerImpl) State() domain.State {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 	return b.state
 }
 
-func (b *breakerImpl) Reset() {
+func (b *BreakerImpl) Reset() {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
@@ -217,7 +217,7 @@ func (b *breakerImpl) Reset() {
 	b.totalSuccesses.Store(0)
 }
 
-func (b *breakerImpl) Metrics() ports.Metrics {
+func (b *BreakerImpl) Metrics() ports.Metrics {
 	return &MetricsImpl{
 		totalRequests:  b.totalRequests.Load(),
 		totalFailures:  b.totalFailures.Load(),
@@ -228,19 +228,19 @@ func (b *breakerImpl) Metrics() ports.Metrics {
 }
 
 // Helper methods for observer notifications
-func (b *breakerImpl) NotifyRejected(ctx context.Context) {
+func (b *BreakerImpl) NotifyRejected(ctx context.Context) {
 	if b.observer != nil {
 		b.observer.OnRejected(ctx, b.name)
 	}
 }
 
-func (b *breakerImpl) NotifyFailure(ctx context.Context, err error) {
+func (b *BreakerImpl) NotifyFailure(ctx context.Context, err error) {
 	if b.observer != nil {
 		b.observer.OnFailure(ctx, b.name, err)
 	}
 }
 
-func (b *breakerImpl) NotifySuccess(ctx context.Context, duration time.Duration) {
+func (b *BreakerImpl) NotifySuccess(ctx context.Context, duration time.Duration) {
 	if b.observer != nil {
 		b.observer.OnSuccess(ctx, b.name, duration)
 	}

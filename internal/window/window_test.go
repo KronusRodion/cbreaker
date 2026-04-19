@@ -176,7 +176,7 @@ func TestFailureRate(t *testing.T) {
 	}{
 		{
 			name: "empty window",
-			setup: func(sw *SlidingWindow) {
+			setup: func(_ *SlidingWindow) {
 				// Do nothing
 			},
 			expectedRate: 0.0,

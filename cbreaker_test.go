@@ -65,7 +65,7 @@ func TestCallWithHighFailureRate(t *testing.T) {
 	// Запускаем запросы
 	for i := 0; i < requests; i++ {
 		wg.Add(1)
-		go func(id int) {
+		go func() {
 			defer wg.Done()
 
 			_, err := Call(ctx, "test-service", getUser)
@@ -79,7 +79,7 @@ func TestCallWithHighFailureRate(t *testing.T) {
 			} else {
 				successCount.Add(1)
 			}
-		}(i)
+		}()
 
 		time.Sleep(20 * time.Millisecond)
 	}
@@ -116,7 +116,7 @@ func TestCallWithLowFailureRate(t *testing.T) {
 	defer cancel()
 
 	// getUser с 10% ошибок
-	getUser := func(ctx context.Context) (user, error) {
+	getUser := func(_ context.Context) (user, error) {
 		time.Sleep(10 * time.Millisecond) // небольшая задержка
 
 		// 10% ошибок
@@ -126,7 +126,6 @@ func TestCallWithLowFailureRate(t *testing.T) {
 
 		return user{name: "StableUser", age: 30}, nil
 	}
-
 
 	var (
 		wg            sync.WaitGroup
@@ -200,11 +199,11 @@ func TestCallWithRecovery(t *testing.T) {
 	t.Log("Phase 1: Simulating failures...")
 	for i := 0; i < 15; i++ {
 		wg.Add(1)
-		go func(id int) {
+		go func() {
 			defer wg.Done()
 
 			_, err := Call(ctx, "recovery-service",
-				func(ctx context.Context) (user, error) {
+				func(_ context.Context) (user, error) {
 					time.Sleep(20 * time.Millisecond)
 					return user{}, errors.New("service unavailable")
 				})
@@ -218,7 +217,7 @@ func TestCallWithRecovery(t *testing.T) {
 			} else {
 				successCount.Add(1)
 			}
-		}(i)
+		}()
 
 		time.Sleep(100 * time.Millisecond)
 	}
@@ -241,11 +240,11 @@ func TestCallWithRecovery(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func(id int) {
+		go func() {
 			defer wg.Done()
 
 			_, err := Call(ctx, "recovery-service",
-				func(ctx context.Context) (user, error) {
+				func(_ context.Context) (user, error) {
 					time.Sleep(20 * time.Millisecond)
 					return user{name: "Recovered", age: 25}, nil
 				})
@@ -259,7 +258,7 @@ func TestCallWithRecovery(t *testing.T) {
 			} else {
 				successCount.Add(1)
 			}
-		}(i)
+		}()
 
 		time.Sleep(200 * time.Millisecond)
 	}
@@ -422,16 +421,16 @@ func TestCallWithDifferentResources(t *testing.T) {
 
 	// Разные функции для разных ресурсов
 	handlers := map[string]func(context.Context) (string, error){
-		"db-master": func(ctx context.Context) (string, error) {
+		"db-master": func(_ context.Context) (string, error) {
 			return "master-data", nil
 		},
-		"db-replica": func(ctx context.Context) (string, error) {
+		"db-replica": func(_ context.Context) (string, error) {
 			return "replica-data", nil
 		},
-		"cache": func(ctx context.Context) (string, error) {
+		"cache": func(_ context.Context) (string, error) {
 			return "", errors.New("cache miss")
 		},
-		"api": func(ctx context.Context) (string, error) {
+		"api": func(_ context.Context) (string, error) {
 			time.Sleep(50 * time.Millisecond)
 			return "api-response", nil
 		},
@@ -491,7 +490,7 @@ func BenchmarkCall(b *testing.B) {
 	ctx := context.Background()
 
 	// Быстрая функция
-	fastFunc := func(ctx context.Context) (string, error) {
+	fastFunc := func(_ context.Context) (string, error) {
 		return "benchmark", nil
 	}
 
@@ -518,7 +517,7 @@ func BenchmarkCallWithDelay(b *testing.B) {
 	ctx := context.Background()
 
 	// Функция с небольшой задержкой
-	delayedFunc := func(ctx context.Context) (string, error) {
+	delayedFunc := func(_ context.Context) (string, error) {
 		time.Sleep(10 * time.Millisecond)
 		return "delayed", nil
 	}

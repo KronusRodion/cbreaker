@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/KronusRodion/cbreaker/domain"
@@ -10,7 +9,6 @@ import (
 )
 
 type PrometheusObserver struct {
-	mu sync.RWMutex
 
 	// Gauges
 	stateGauge *prometheus.GaugeVec
@@ -147,11 +145,11 @@ func (o *PrometheusObserver) stateToGauge(state domain.State) float64 {
 	}
 }
 
-func (o *PrometheusObserver) OnStateChange(ctx context.Context, name string, fromState, toState domain.State) {
+func (o *PrometheusObserver) OnStateChange(_ context.Context, name string, _, toState domain.State) {
 	o.stateGauge.WithLabelValues(name).Set(o.stateToGauge(toState))
 }
 
-func (o *PrometheusObserver) OnCall(ctx context.Context, name string, duration time.Duration, err error) {
+func (o *PrometheusObserver) OnCall(_ context.Context, name string, duration time.Duration, err error) {
 	result := "success"
 	if err != nil {
 		result = "failure"
@@ -161,15 +159,15 @@ func (o *PrometheusObserver) OnCall(ctx context.Context, name string, duration t
 	o.callDuration.WithLabelValues(name, result).Observe(duration.Seconds())
 }
 
-func (o *PrometheusObserver) OnSuccess(ctx context.Context, name string, duration time.Duration) {
+func (o *PrometheusObserver) OnSuccess(_ context.Context, name string, _ time.Duration) {
 	o.successesTotal.WithLabelValues(name).Inc()
 }
 
-func (o *PrometheusObserver) OnFailure(ctx context.Context, name string, err error) {
+func (o *PrometheusObserver) OnFailure(_ context.Context, name string, _ error) {
 	o.failuresTotal.WithLabelValues(name).Inc()
 }
 
-func (o *PrometheusObserver) OnRejected(ctx context.Context, name string) {
+func (o *PrometheusObserver) OnRejected(_ context.Context, name string) {
 	o.rejectedTotal.WithLabelValues(name).Inc()
 	o.callsTotal.WithLabelValues(name, "rejected").Inc()
 }

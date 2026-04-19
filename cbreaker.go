@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	mu sync.RWMutex = sync.RWMutex{}
+	mu = sync.RWMutex{}
 )
 
 // Config глобальной конфигурации
@@ -47,9 +47,9 @@ func Call[T any](ctx context.Context, resourceName string, fn func(context.Conte
 	start := time.Now()
 	result, err = fn(ctx)
 	duration := time.Since(start)
-	start1 := time.Now()
+	
 	// Record outcome in another goroutine to low latency main request
-	go breaker.RecordOutcome(state, err, duration, start1)
+	go breaker.RecordOutcome(state, err, duration)
 
 	// Notify observer
 	if err != nil {

@@ -70,11 +70,11 @@ func (o *OtelObserver) OnCall(ctx context.Context, name string, duration time.Du
 	o.durationHist.Record(ctx, duration.Seconds(), metric.WithAttributes(attrs...))
 }
 
-func (o *OtelObserver) OnSuccess(ctx context.Context, name string, duration time.Duration) {
+func (o *OtelObserver) OnSuccess(_ context.Context, _ string, _ time.Duration) {
 	// Already handled in OnCall
 }
 
-func (o *OtelObserver) OnFailure(ctx context.Context, name string, err error) {
+func (o *OtelObserver) OnFailure(_ context.Context, _ string, _ error) {
 	// Already handled in OnCall
 }
 
