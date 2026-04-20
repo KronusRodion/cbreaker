@@ -1,4 +1,4 @@
-name: Tests
+name: Pipe
 
 on:
   push:
@@ -18,24 +18,23 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        version: latest
-        go-version: '1.26.2'  
+        go-version: '1.26.2'  # Use same version as local
     
     - name: Download dependencies
       run: go mod download
     
+    - name: Install golangci-lint
+      run: |
+        # Install specific version matching local
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
+    
     - name: Run linter
-      uses: golangci/golangci-lint-action@v6
-      with:
-        version: latest
-        args: --out-format=colored-line-number
-        # Only run on changed files in PR
-        only-new-issues: false
+      run: golangci-lint run --out-format=colored-line-number --timeout=5m ./...
 
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    needs: lint  # Wait for lint to pass
+    needs: lint
     
     steps:
     - name: Checkout code
