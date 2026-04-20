@@ -1,6 +1,9 @@
 # cbreaker
 This is Circuit Breaker repository with safety, simple and fast pattern integration. Project have 70% test covering.
-We use a non-blocking update of the cbreaker status, so the request delay increases by only 5 ms..
+We use a non-blocking update of the cbreaker status, so the request delay increases by only 5 ms.
+
+Project uses generics so you don`t have to use type assertion.
+Also, you don't need to skip any cbreaker structure - just add a resource and access it through the global Call function.
 
 # Fast start
 ```Go
@@ -14,6 +17,8 @@ getUser := func(ctx context.Context) (user, error) {
 
 user, err := cbreaker.Call(ctx, "postgres", getUser)
 // If cbreaker will open, u get ErrCircuitOpen from cbreaker/domain
+
+log.Println(user.Name)
 ```
 
 # Examples
