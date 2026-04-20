@@ -8,29 +8,17 @@ on:
 
 jobs:
   lint:
-    name: Lint Code
+    name: lint
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        version: latest
-        go-version: '1.26.2'  
-    
-    - name: Download dependencies
-      run: go mod download
-    
-    - name: Run linter
-      uses: golangci/golangci-lint-action@v6
-      with:
-        version: latest
-        args: --out-format=colored-line-number
-        # Only run on changed files in PR
-        only-new-issues: false
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
 
   test:
     name: Run Tests
