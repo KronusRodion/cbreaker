@@ -1,6 +1,6 @@
 # cbreaker
 This is Circuit Breaker repository with safety, simple and fast pattern integration. Project have 70% test covering.
-We use unblocking cbreaker state update so request latency rise only about 5ms.
+We use a non-blocking update of the cbreaker status, so the request delay increases by only 5 ms..
 
 # Fast start
 ```Go
