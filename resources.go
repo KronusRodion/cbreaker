@@ -17,7 +17,7 @@ func init() {
 
 	createBreaker = func(cfg Config) ports.Breaker {
 
-		return circuit.NewBreaker(
+		return circuit.NewAtomicBreaker(
 			circuit.WithName(cfg.Name),
 			circuit.WithFailureThreshold(cfg.FailureThreshold),
 			circuit.WithSuccessThreshold(cfg.SuccessThreshold),
